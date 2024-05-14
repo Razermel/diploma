@@ -40,10 +40,20 @@ public class SecurityConfiguration {
                                 .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                 .authenticationProvider(authenticationProvider)
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .cors(); // Включаем настройки CORS
 
-        // Добавляем настройки CORS
-        //http.cors(); // Используем дефолтные настройки CORS
+        // Настраиваем CORS
+        http.cors(c -> {
+            CorsConfigurationSource source = request -> {
+                CorsConfiguration config = new CorsConfiguration();
+                config.setAllowedOrigins(Arrays.asList("http://localhost:5173")); // Разрешенные домены
+                config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE")); // Разрешенные методы
+                config.setAllowedHeaders(Arrays.asList("*")); // Разрешаем все заголовки
+                return config;
+            };
+            c.configurationSource(source);
+        });
 
         return http.build();
     }

@@ -7,6 +7,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.List;
+
 
 
 @RestController
@@ -56,6 +58,29 @@ public class InvoiceController {
             } else {
                 logger.info("Invoice {} not found", id);
                 return ResponseEntity.notFound().build();
+            }
+        } else {
+            logger.info("User {} doesn't have permission to view invoices", currentUserName);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+        }
+    }
+
+    @GetMapping("/api/v1/invoices")
+    public ResponseEntity<List<Invoice>> getAllInvoices(Authentication authentication) {
+        String currentUserName = authentication.getName();
+
+        // Проверяем роль пользователя
+        boolean hasRole1 = authentication.getAuthorities().stream()
+                .anyMatch(r -> r.getAuthority().equals("USER"));
+
+        if (hasRole1) {
+            List<Invoice> invoices = invoiceService.getAllInvoices();
+            if (!invoices.isEmpty()) {
+                logger.info("Retrieved all invoices");
+                return ResponseEntity.ok(invoices);
+            } else {
+                logger.info("No invoices found");
+                return ResponseEntity.noContent().build();
             }
         } else {
             logger.info("User {} doesn't have permission to view invoices", currentUserName);

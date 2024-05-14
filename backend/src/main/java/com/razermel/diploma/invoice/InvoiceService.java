@@ -2,6 +2,7 @@ package com.razermel.diploma.invoice;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.util.List;
 
 
 
@@ -36,4 +37,9 @@ public class InvoiceService {
     public Invoice getInvoiceById(Long id) {
         return invoiceRepository.findById(id).orElse(null);
     }
+
+    public List<Invoice> getAllInvoices() {
+        return invoiceRepository.findAll();
+    }
+
 }

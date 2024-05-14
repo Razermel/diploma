@@ -21,6 +21,7 @@ public class Invoice {
     private double totalCost;
     private String supplier;
     private String customer;
+    private boolean status;
 
     @OneToMany(mappedBy = "invoice")
     @JsonManagedReference
