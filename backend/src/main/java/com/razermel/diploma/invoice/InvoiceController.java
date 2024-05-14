@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.List;
-
+import java.util.Map;
 
 
 @RestController
@@ -85,6 +85,17 @@ public class InvoiceController {
         } else {
             logger.info("User {} doesn't have permission to view invoices", currentUserName);
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+        }
+    }
+
+    @PutMapping("/api/v1/invoices/{id}/status")
+    public ResponseEntity<?> updateInvoiceStatus(@PathVariable Long id, @RequestBody Map<String, Boolean> statusMap) {
+        Boolean newStatus = statusMap.get("status");
+        try {
+            invoiceService.updateInvoiceStatus(id, newStatus);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to update invoice status");
         }
     }
 

@@ -3,6 +3,8 @@ package com.razermel.diploma.invoice;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.Optional;
 
 
 
@@ -40,6 +42,18 @@ public class InvoiceService {
 
     public List<Invoice> getAllInvoices() {
         return invoiceRepository.findAll();
+    }
+
+    @Transactional
+    public void updateInvoiceStatus(Long id, boolean newStatus) {
+        Optional<Invoice> optionalInvoice = invoiceRepository.findById(id);
+        if (optionalInvoice.isPresent()) {
+            Invoice invoice = optionalInvoice.get();
+            invoice.setStatus(newStatus);
+            invoiceRepository.save(invoice);
+        } else {
+            System.out.println("Invoice with ID " + id + " not found");
+        }
     }
 
 }
