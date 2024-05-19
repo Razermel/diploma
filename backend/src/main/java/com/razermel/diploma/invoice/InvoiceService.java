@@ -15,25 +15,47 @@ public class InvoiceService {
     private InvoiceRepository invoiceRepository;
 
     @Autowired
+    private SupplierRepository supplierRepository;
+
+    @Autowired
+    private CustomerRepository customerRepository;
+
+    @Autowired
     private InvoiceProductRepository invoiceProductRepository;
 
     @Autowired
     private ProductService productService;
 
-    public void createInvoice(Invoice invoice) {
+    @Transactional
+    public void createInvoice(InvoiceRequest invoiceRequest) {
+        // Сохранение поставщика и покупателя
+        Supplier supplier = supplierRepository.save(invoiceRequest.getSupplier());
+        Customer customer = customerRepository.save(invoiceRequest.getCustomer());
+
+        // Сохранение счета-фактуры с указанием поставщика и покупателя
+        Invoice invoice = invoiceRequest.getInvoice();
+        invoice.setSupplier(supplier);
+        invoice.setCustomer(customer);
+        invoiceRepository.save(invoice);
+
         double totalCost = 0;
-        for (InvoiceProduct invoiceProduct : invoice.getInvoiceProducts()) {
-            Product product = invoiceProduct.getProduct();
-            productService.saveProduct(product); // Сохраняем продукт перед сохранением InvoiceProduct
-            totalCost += product.getPrice() * invoiceProduct.getCount();
+        List<InvoiceProduct> invoiceProducts = invoiceRequest.getInvoiceProducts();
+
+        if (invoiceProducts != null) {
+            for (InvoiceProduct invoiceProduct : invoiceProducts) {
+                Product product = invoiceProduct.getProduct();
+                productService.saveProduct(product); // Сохранение продукта перед сохранением InvoiceProduct
+                totalCost += product.getPrice() * invoiceProduct.getCount();
+                invoiceProduct.setInvoice(invoice);
+                invoiceProductRepository.save(invoiceProduct); // Сохранение связанного InvoiceProduct
+            }
+        } else {
+            System.out.println("Invoice products list is null"); // Для отладки
         }
 
+        // Установка общей стоимости счета-фактуры и его сохранение
         invoice.setTotalCost(totalCost);
         invoiceRepository.save(invoice);
-        for (InvoiceProduct invoiceProduct : invoice.getInvoiceProducts()) {
-            invoiceProduct.setInvoice(invoice);
-            invoiceProductRepository.save(invoiceProduct);
-        }
     }
 
     public Invoice getInvoiceById(Long id) {

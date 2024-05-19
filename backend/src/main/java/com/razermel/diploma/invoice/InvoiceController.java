@@ -21,25 +21,22 @@ public class InvoiceController {
 
 
     @PostMapping("/api/v1/invoices/create")
-    public ResponseEntity<String> createInvoice(@RequestBody Invoice invoice, Authentication authentication) {
-        // Получаем имя текущего пользователя из аутентификационного объекта
+    public ResponseEntity<String> createInvoice(@RequestBody InvoiceRequest invoiceRequest, Authentication authentication) {
         String currentUserName = authentication.getName();
-
-        // Проверяем роль пользователя
         boolean hasRole1 = authentication.getAuthorities().stream()
                 .anyMatch(r -> r.getAuthority().equals("USER"));
 
-
         if (hasRole1) {
-            // Логика создания счета-фактуры
-            logger.info("Received request to create invoice: {}", invoice.getId());
-            invoiceService.createInvoice(invoice);
+            logger.info("Received request to create invoice");
+            invoiceService.createInvoice(invoiceRequest);
             logger.info("Invoice created successfully");
             return ResponseEntity.status(HttpStatus.CREATED).body("Invoice created successfully");
         } else {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You don't have permission to create invoices");
         }
     }
+
+
 
 
     @GetMapping("/api/v1/invoices/{id}")
@@ -68,8 +65,6 @@ public class InvoiceController {
     @GetMapping("/api/v1/invoices")
     public ResponseEntity<List<Invoice>> getAllInvoices(Authentication authentication) {
         String currentUserName = authentication.getName();
-
-        // Проверяем роль пользователя
         boolean hasRole1 = authentication.getAuthorities().stream()
                 .anyMatch(r -> r.getAuthority().equals("USER"));
 
@@ -87,6 +82,7 @@ public class InvoiceController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
         }
     }
+
 
     @PutMapping("/api/v1/invoices/{id}/status")
     public ResponseEntity<?> updateInvoiceStatus(@PathVariable Long id, @RequestBody Map<String, Boolean> statusMap) {

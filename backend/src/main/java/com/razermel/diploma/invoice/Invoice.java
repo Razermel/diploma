@@ -10,21 +10,26 @@ import java.util.Collections;
 import java.util.List;
 
 
-
-@Data
 @Entity
+@Data
 public class Invoice {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private double totalCost;
-    private String supplier;
-    private String customer;
+
+    @ManyToOne
+    @JoinColumn(name = "supplier_id", referencedColumnName = "id")
+    private Supplier supplier;
+
+    @ManyToOne
+    @JoinColumn(name = "customer_id", referencedColumnName = "id")
+    private Customer customer;
+
     private boolean status;
 
     @OneToMany(mappedBy = "invoice")
     @JsonManagedReference
     private List<InvoiceProduct> invoiceProducts;
-
 }
