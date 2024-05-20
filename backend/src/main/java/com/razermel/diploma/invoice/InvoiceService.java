@@ -28,11 +28,9 @@ public class InvoiceService {
 
     @Transactional
     public void createInvoice(InvoiceRequest invoiceRequest) {
-        // Сохранение поставщика и покупателя
         Supplier supplier = supplierRepository.save(invoiceRequest.getSupplier());
         Customer customer = customerRepository.save(invoiceRequest.getCustomer());
 
-        // Сохранение счета-фактуры с указанием поставщика и покупателя
         Invoice invoice = invoiceRequest.getInvoice();
         invoice.setSupplier(supplier);
         invoice.setCustomer(customer);
@@ -44,19 +42,19 @@ public class InvoiceService {
         if (invoiceProducts != null) {
             for (InvoiceProduct invoiceProduct : invoiceProducts) {
                 Product product = invoiceProduct.getProduct();
-                productService.saveProduct(product); // Сохранение продукта перед сохранением InvoiceProduct
+                productService.saveProduct(product);
                 totalCost += product.getPrice() * invoiceProduct.getCount();
                 invoiceProduct.setInvoice(invoice);
-                invoiceProductRepository.save(invoiceProduct); // Сохранение связанного InvoiceProduct
+                invoiceProductRepository.save(invoiceProduct);
             }
         } else {
-            System.out.println("Invoice products list is null"); // Для отладки
+            System.out.println("Invoice products list is null");
         }
 
-        // Установка общей стоимости счета-фактуры и его сохранение
         invoice.setTotalCost(totalCost);
         invoiceRepository.save(invoice);
     }
+
 
     public Invoice getInvoiceById(Long id) {
         return invoiceRepository.findById(id).orElse(null);

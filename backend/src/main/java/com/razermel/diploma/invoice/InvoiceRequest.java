@@ -10,6 +10,5 @@ public class InvoiceRequest {
     private Customer customer;
     private Invoice invoice;
     private List<InvoiceProduct> invoiceProducts;
-    
-}
 
+}

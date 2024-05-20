@@ -19,6 +19,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 
+import static org.springframework.security.config.Customizer.withDefaults;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 
@@ -33,27 +34,25 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(req ->
-                        req.requestMatchers("/api/v1/auth/**")
-                                .permitAll()
-                                .anyRequest().authenticated())
-                .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers("/api/v1/invoices/**").hasAnyAuthority("USER", "EMPLOYER")
+                        .anyRequest().authenticated()
+                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .cors(); // Включаем настройки CORS
-
-        // Настраиваем CORS
-        http.cors(c -> {
-            CorsConfigurationSource source = request -> {
-                CorsConfiguration config = new CorsConfiguration();
-                config.setAllowedOrigins(Arrays.asList("http://localhost:5173")); // Разрешенные домены
-                config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE")); // Разрешенные методы
-                config.setAllowedHeaders(Arrays.asList("*")); // Разрешаем все заголовки
-                return config;
-            };
-            c.configurationSource(source);
-        });
+                .cors(cors -> {
+                    CorsConfigurationSource source = request -> {
+                        CorsConfiguration config = new CorsConfiguration();
+                        config.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+                        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
+                        config.setAllowedHeaders(Arrays.asList("*"));
+                        return config;
+                    };
+                    cors.configurationSource(source);
+                });
 
         return http.build();
     }
@@ -62,13 +61,12 @@ public class SecurityConfiguration {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173")); // Указываем разрешенные домены
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE")); // Указываем разрешенные HTTP методы
-        configuration.setAllowedHeaders(Arrays.asList("*")); // Разрешаем все заголовки
-
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/**", configuration); // Применяем настройки для определенных URL
-
+        source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 }

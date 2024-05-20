@@ -31,7 +31,7 @@ public class AuthenticationService {
                 .username(request.getUsername())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.USER)
+                .role(request.getRole() != null ? request.getRole() : Role.USER)  // Устанавливаем роль из запроса
                 .phone_number(request.getPhone_number())
                 .full_name(request.getFull_name())
                 .build();
@@ -54,11 +54,7 @@ public class AuthenticationService {
             var user = repository.findByUsername(request.getUsername())
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-            // Логируем найденного пользователя
-            Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
             logger.info("User found: {}", user);
-
-            // Логируем результат поиска пользователя по username
             logger.info("User found by username: {}", repository.findByUsername(request.getUsername()));
 
             var jwtToken = jwtService.generateToken(user);
@@ -66,10 +62,8 @@ public class AuthenticationService {
                     .token(jwtToken)
                     .build();
         } catch (AuthenticationException e) {
-            // Логирование ошибки аутентификации
-            Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
             logger.error("Authentication failed: {}", e.getMessage());
-            throw e; // Повторное выбрасывание исключения для обработки выше
+            throw e;
         }
     }
 }

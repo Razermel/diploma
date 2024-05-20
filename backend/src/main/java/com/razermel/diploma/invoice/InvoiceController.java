@@ -20,13 +20,13 @@ public class InvoiceController {
     private InvoiceService invoiceService;
 
 
-    @PostMapping("/api/v1/invoices/create")
+    @PostMapping("/create")
     public ResponseEntity<String> createInvoice(@RequestBody InvoiceRequest invoiceRequest, Authentication authentication) {
         String currentUserName = authentication.getName();
-        boolean hasRole1 = authentication.getAuthorities().stream()
-                .anyMatch(r -> r.getAuthority().equals("USER"));
+        boolean hasEmployerRole = authentication.getAuthorities().stream()
+                .anyMatch(r -> r.getAuthority().equals("EMPLOYER"));
 
-        if (hasRole1) {
+        if (hasEmployerRole) {
             logger.info("Received request to create invoice");
             invoiceService.createInvoice(invoiceRequest);
             logger.info("Invoice created successfully");
@@ -62,13 +62,13 @@ public class InvoiceController {
         }
     }
 
-    @GetMapping("/api/v1/invoices")
+    @GetMapping
     public ResponseEntity<List<Invoice>> getAllInvoices(Authentication authentication) {
         String currentUserName = authentication.getName();
-        boolean hasRole1 = authentication.getAuthorities().stream()
-                .anyMatch(r -> r.getAuthority().equals("USER"));
+        boolean hasRole = authentication.getAuthorities().stream()
+                .anyMatch(r -> r.getAuthority().equals("EMPLOYER") || r.getAuthority().equals("EMPLOYEE"));
 
-        if (hasRole1) {
+        if (hasRole) {
             List<Invoice> invoices = invoiceService.getAllInvoices();
             if (!invoices.isEmpty()) {
                 logger.info("Retrieved all invoices");
