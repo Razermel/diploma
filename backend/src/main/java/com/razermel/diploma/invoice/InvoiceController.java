@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Map;
 
-
 @RestController
 public class InvoiceController {
 
@@ -19,70 +18,37 @@ public class InvoiceController {
     @Autowired
     private InvoiceService invoiceService;
 
-
     @PostMapping("/api/v1/invoices/create")
     public ResponseEntity<String> createInvoice(@RequestBody InvoiceRequest invoiceRequest, Authentication authentication) {
-        String currentUserName = authentication.getName();
-        boolean hasRole1 = authentication.getAuthorities().stream()
-                .anyMatch(r -> r.getAuthority().equals("USER"));
-
-        if (hasRole1) {
-            logger.info("Received request to create invoice");
-            invoiceService.createInvoice(invoiceRequest);
-            logger.info("Invoice created successfully");
-            return ResponseEntity.status(HttpStatus.CREATED).body("Invoice created successfully");
-        } else {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You don't have permission to create invoices");
-        }
+        logger.info("Received request to create invoice");
+        invoiceService.createInvoice(invoiceRequest);
+        logger.info("Invoice created successfully");
+        return ResponseEntity.status(HttpStatus.CREATED).body("Invoice created successfully");
     }
-
-
-
 
     @GetMapping("/api/v1/invoices/{id}")
     public ResponseEntity<Invoice> getInvoiceById(@PathVariable Long id, Authentication authentication) {
-        String currentUserName = authentication.getName();
-
-        // Проверяем роль пользователя
-        boolean hasRole1 = authentication.getAuthorities().stream()
-                .anyMatch(r -> r.getAuthority().equals("USER"));
-
-        if (hasRole1) {
-            Invoice invoice = invoiceService.getInvoiceById(id);
-            if (invoice != null) {
-                logger.info("Invoice {}", id);
-                return ResponseEntity.ok(invoice);
-            } else {
-                logger.info("Invoice {} not found", id);
-                return ResponseEntity.notFound().build();
-            }
+        Invoice invoice = invoiceService.getInvoiceById(id);
+        if (invoice != null) {
+            logger.info("Invoice {}", id);
+            return ResponseEntity.ok(invoice);
         } else {
-            logger.info("User {} doesn't have permission to view invoices", currentUserName);
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+            logger.info("Invoice {} not found", id);
+            return ResponseEntity.notFound().build();
         }
     }
 
     @GetMapping("/api/v1/invoices")
     public ResponseEntity<List<Invoice>> getAllInvoices(Authentication authentication) {
-        String currentUserName = authentication.getName();
-        boolean hasRole1 = authentication.getAuthorities().stream()
-                .anyMatch(r -> r.getAuthority().equals("USER"));
-
-        if (hasRole1) {
-            List<Invoice> invoices = invoiceService.getAllInvoices();
-            if (!invoices.isEmpty()) {
-                logger.info("Retrieved all invoices");
-                return ResponseEntity.ok(invoices);
-            } else {
-                logger.info("No invoices found");
-                return ResponseEntity.noContent().build();
-            }
+        List<Invoice> invoices = invoiceService.getAllInvoices();
+        if (!invoices.isEmpty()) {
+            logger.info("Retrieved all invoices");
+            return ResponseEntity.ok(invoices);
         } else {
-            logger.info("User {} doesn't have permission to view invoices", currentUserName);
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+            logger.info("No invoices found");
+            return ResponseEntity.noContent().build();
         }
     }
-
 
     @PutMapping("/api/v1/invoices/{id}/status")
     public ResponseEntity<?> updateInvoiceStatus(@PathVariable Long id, @RequestBody Map<String, Boolean> statusMap) {
@@ -94,5 +60,4 @@ public class InvoiceController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to update invoice status");
         }
     }
-
 }

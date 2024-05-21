@@ -31,7 +31,7 @@ public class AuthenticationService {
                 .username(request.getUsername())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.USER)
+                .role(request.getRole())  // Role.EMPLOYER
                 .phone_number(request.getPhone_number())
                 .full_name(request.getFull_name())
                 .build();
@@ -41,6 +41,7 @@ public class AuthenticationService {
                 .token(jwtToken)
                 .build();
     }
+
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         try {

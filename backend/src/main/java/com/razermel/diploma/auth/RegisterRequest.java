@@ -1,5 +1,6 @@
 package com.razermel.diploma.auth;
 
+import com.razermel.diploma.user.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,5 +16,5 @@ public class RegisterRequest {
     private String password;
     private String full_name;
     private String phone_number;
-
+    private Role role;
 }

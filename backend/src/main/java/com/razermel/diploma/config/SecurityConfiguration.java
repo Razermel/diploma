@@ -5,6 +5,7 @@ import jakarta.servlet.Filter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -21,7 +22,6 @@ import java.util.Arrays;
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
-
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -34,10 +34,13 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(req ->
-                        req.requestMatchers("/api/v1/auth/**")
-                                .permitAll()
-                                .anyRequest().authenticated())
+                .authorizeHttpRequests(req -> {
+                    req.requestMatchers("/api/v1/auth/**").permitAll();
+                    req.requestMatchers(HttpMethod.POST, "/api/v1/invoices/create").hasAuthority("EMPLOYER");
+                    req.requestMatchers(HttpMethod.PUT, "/api/v1/invoices/**").hasAuthority("WORKER");
+                    req.requestMatchers(HttpMethod.GET, "/api/v1/invoices/**").hasAnyAuthority("EMPLOYER", "WORKER");
+                    req.anyRequest().authenticated();
+                })
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
