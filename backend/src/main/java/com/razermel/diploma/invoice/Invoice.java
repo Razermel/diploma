@@ -29,6 +29,7 @@ public class Invoice {
 
     private boolean status;
 
+
     @OneToMany(mappedBy = "invoice")
     @JsonManagedReference
     private List<InvoiceProduct> invoiceProducts;

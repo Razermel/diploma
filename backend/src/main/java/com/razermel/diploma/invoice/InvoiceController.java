@@ -52,12 +52,15 @@ public class InvoiceController {
 
     @PutMapping("/api/v1/invoices/{id}/status")
     public ResponseEntity<?> updateInvoiceStatus(@PathVariable Long id, @RequestBody Map<String, Boolean> statusMap) {
+        logger.info("Update invoice status started");
         Boolean newStatus = statusMap.get("status");
         try {
             invoiceService.updateInvoiceStatus(id, newStatus);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
+            logger.error("Failed to update invoice status", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to update invoice status");
         }
     }
+
 }

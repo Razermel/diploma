@@ -37,7 +37,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(req -> {
                     req.requestMatchers("/api/v1/auth/**").permitAll();
                     req.requestMatchers(HttpMethod.POST, "/api/v1/invoices/create").hasAuthority("EMPLOYER");
-                    req.requestMatchers(HttpMethod.PUT, "/api/v1/invoices/**").hasAuthority("WORKER");
+                    req.requestMatchers(HttpMethod.PUT, "/api/v1/invoices/**").hasAnyAuthority("EMPLOYER", "WORKER");
                     req.requestMatchers(HttpMethod.GET, "/api/v1/invoices/**").hasAnyAuthority("EMPLOYER", "WORKER");
                     req.anyRequest().authenticated();
                 })
